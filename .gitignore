@@ -1,0 +1,8 @@
+node_modules/
+.env
+data/*.jsonl
+eval/recordings/
+*.wav
+*.mp3
+*.m4a
+.DS_Store

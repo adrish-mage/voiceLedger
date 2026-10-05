@@ -1,0 +1,144 @@
+[
+  {
+    "id": "demo-001",
+    "note": "Full demo story: credit, correction, overdue, dispute",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 800 rupaye udhaar likh do, chawal 600 aur tel 200 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "newSession": true
+      },
+      {
+        "say": "Raju ka balance kya hai?"
+      },
+      {
+        "say": "Nahi, tel 200 nahi, 120 ka tha."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "clockDays": 15
+      },
+      {
+        "say": "Raju bol raha hai usne 300 rupaye de diye the."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 720,
+      "status": "DISPUTED",
+      "disputedAmount": 300,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "pay-001",
+    "note": "Partial payment reduces balance",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 500 rupaye udhaar likh do, dal 500 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Raju ne 200 rupaye diye."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "corr-wrong-old-001",
+    "note": "Speaker misstates the old amount: system must NOT write a correction",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 800 rupaye udhaar likh do, chawal 600 aur tel 200 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Nahi, tel 150 nahi, 120 ka tha."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 800,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "reject-001",
+    "note": "User says no: nothing is written",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 300 rupaye udhaar likh do, chai 300 ka."
+      },
+      {
+        "say": "Nahi."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  }
+]

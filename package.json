@@ -1,0 +1,23 @@
+{
+  "name": "voice-ledger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Voice-first Hinglish credit book. The AI proposes, the application owns the books.",
+  "scripts": {
+    "test": "node --test",
+    "dev": "node src/api/server.js",
+    "demo": "node scripts/demo.js",
+    "eval": "node eval/run.js",
+    "mcp:hello": "node src/mcp/hello.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.0",
+    "express": "^5.2.1",
+    "zod": "^4.6.5"
+  }
+}
