@@ -65,7 +65,7 @@ The model never touches money. See the steps at the top of `src/ai/interpret.llm
 - Customer matching is exact/prefix only, no fuzzy matching.
 - Only the hello-world MCP server exists. The 8 real tools are not wrapped yet.
 - **Alexa+ connection is UNVERIFIED.** The hello server completed a local MCP handshake reporting protocol 2025-11-25.
-  That says nothing about Alexa+ reaching it.
+  That says nothing about Alexa+ reaching it.Submission path: self-hosted MCP server plus Alexa-style simulator. Direct Alexa+ device connection not achieved (UNVERIFIED).
 - No authentication; single shop owner.
 
 ## License

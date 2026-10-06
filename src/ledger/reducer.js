@@ -17,7 +17,7 @@ export function replay(events, now = new Date()) {
   const creditById = new Map();
   const disputes = new Map();
   const seen = new Set();
-  let paymentsTotal = 0;
+  let paymentsTotal = 0; 
 
   for (const e of events) {
     if (seen.has(e.id)) throw violation(`duplicate event id ${e.id}`);
