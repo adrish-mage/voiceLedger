@@ -1,25 +1,115 @@
-# voice-ledger (working name — pick a product name this week)
+# Voice Ledger
 
-A voice-first Hinglish credit book for hands-busy small-business owners.
-**The AI proposes. The application owns the books.**
+Voice Ledger is a voice credit book for small merchants, in any language: a shopkeeper speaks naturally, reviews a proposed transaction, and keeps a reliable record without stopping to write. **The AI proposes; the application owns the books.**
 
-Amazon Developer Hackathon 2026 · Alexa+ track · solo build.
+## Architecture
 
+```mermaid
+flowchart LR
+  A[Voice] --> B[Speech-to-text]
+  B --> C[LLM interpreter]
+  C --> D[Schema validation]
+  D --> E[Agent proposal]
+  E --> F{User says yes}
+  F -->|Approved| G[Append-only event log]
+  G --> H[Derived balances]
 ```
-VOICE → STT → LLM interpretation → proposal → validation → approval
-      → append-only event → derived balance → recovery (correct / dispute / overdue)
+
+## Prerequisites
+
+- Node.js 20 or newer and npm.
+- For the LLM-backed API and LLM evaluations: Amazon Bedrock access, an AWS bearer token, region, and model ID. The mock interpreter and ledger tests do not require Bedrock.
+- Speech-to-text is an upstream input to this prototype; the eval harness evaluates transcripts, not audio.
+
+## Setup and run
+
+From the repository root:
+
+```powershell
+npm i
+Copy-Item .env.example .env
 ```
 
-## Quick start
+Fill in the Bedrock settings in `.env`, then start the LLM-backed API:
 
-```bash
-npm install
-npm test          # 17 tests: ledger rules, approval gate, random-operation invariants, full demo story
-npm run demo      # the whole demo conversation through the real pipeline (no AI needed)
-npm run eval      # text-level eval harness on eval/cases.sample.json
-npm run dev       # HTTP API on :3000 (build the Alexa-style simulator UI against this)
-npm run mcp:hello # Day-1 hello-world MCP server on :3001/mcp (Streamable HTTP)
+```powershell
+npm run dev:llm
 ```
+
+In another terminal, start the web simulator:
+
+```powershell
+cd web
+npm i
+npm run dev
+```
+
+To start the hello-world MCP server, the currently defined command is `npm run mcp:hello`. The requested `npm run mcp` command is not currently defined in `package.json`. Run the tests from the repository root with `npm test`.
+
+### Evaluations
+
+`npm run eval` runs the sample transcript set using the mock interpreter. To run the dev set or holdout set with the LLM interpreter, set `CASES` and `INTERPRETER` before starting Node. In PowerShell:
+
+```powershell
+$env:CASES = 'eval/cases.json'
+$env:INTERPRETER = 'llm'
+node --env-file=.env eval/run.js
+
+$env:CASES = 'eval/cases.holdout.json'
+node --env-file=.env eval/run.js
+```
+
+Select the model using `BEDROCK_MODEL_ID` in `.env` before each run. The dev set was used for prompt tuning; the holdout set was not used for prompt tuning.
+
+## Safety design
+
+The model only interprets the transcript into a schema-validated intent. It never writes events, approves a proposal, or computes a balance. The application creates the proposal; approval is bound to the exact proposal content by a digest, and only the approval path can append an event. Balances are derived by replaying the append-only event log. Ledger invariants are checked in tests and evaluations; the target and reported safety result is **0 invariant violations**.
+
+## Evaluation results
+
+Fill in the measured results after running each model. Use the same metrics for both sets; do not infer values from a partial run.
+
+| Interpreter / model | Dev set (pass / total; accuracy) | Dev invariant violations | Holdout set (pass / total; accuracy) | Holdout invariant violations |
+|---|---:|---:|---:|---:|
+| Mock | — | — | — | — |
+| GLM 4.7 Flash | — | — | — | — |
+| gpt-oss-20b | — | — | — | — |
+
+## Ledger invariants
+
+1. Balance is derived by replaying the event log, never stored. Two independent computations must agree.
+2. Events are immutable. A correction is a new event pointing at the original.
+3. A correction must reference an existing credit.
+4. A dispute contributes zero to the balance. A claim is never turned into a payment.
+5. Nothing is written without `approve()`. Corrections and dispute resolution require the proposal digest.
+6. Committed content hashes to the approved content, and a dry-run replay happens before every write.
+7. Payments are allocated oldest-credit-first (FIFO). The due date is the earliest unpaid credit.
+8. Overdue is computed by code from the past-due unpaid amount, excluding disputed amounts.
+
+## Project map
+
+| File | Purpose |
+|---|---|
+| `src/ledger/reducer.js` | Replays events into balances, FIFO allocation, disputes, and overdue status. |
+| `src/ledger/approval.js` | Approval tiers and digest binding. |
+| `src/ledger/service.js` | Proposals and approvals; the only path that writes events. |
+| `src/ledger/store.js` | Append-only in-memory or JSONL event store. |
+| `src/ai/schema.js` | Validated JSON contract for interpreter output. |
+| `src/ai/interpret.llm.js` | Bedrock interpreter prompt and response handling. |
+| `eval/run.js` | Transcript evaluation harness and invariant checks. |
+
+## Known gaps
+
+- Whole rupees only; no paise yet.
+- The mock interpreter only understands the demo phrasings.
+- Customer matching is exact/prefix only, with no fuzzy matching.
+- Only the hello-world MCP server exists; the eight real tools are not wrapped yet.
+- Alexa+ device connection is unverified. The hello server completed a local MCP handshake reporting protocol 2025-11-25, which does not demonstrate Alexa+ connectivity. Current submission path is a self-hosted MCP server plus Alexa-style simulator.
+- No authentication; single shop owner.
+
+## License
+
+MIT (see LICENSE).
 
 ## Map of the code
 

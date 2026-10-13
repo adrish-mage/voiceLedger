@@ -235,3 +235,18 @@ test('END TO END: the demo story through the agent', async () => {
   assert.equal(store.all().filter((e) => e.type === 'PAYMENT_RECEIVED').length, 0);
   assert.deepEqual(checkInvariants(store.all(), new Date(Date.parse(T0) + 15 * DAY)), []);
 });
+import { emptyIntent } from '../src/ai/schema.js';
+import { detectLanguage } from '../src/ai/interpret.llm.js';
+
+test('detectLanguage: Devanagari -> hindi, Latin -> hinglish', () => {
+  assert.equal(detectLanguage('Raju ne 500 ka tel'), 'hinglish');
+  assert.equal(detectLanguage('राजू ने 500 दिए'), 'hindi');
+});
+
+test('CORRECT_ITEM with correction:null is rejected, not a crash', async () => {
+  const { service } = setup();
+  const bad = emptyIntent({ intent: 'CORRECT_ITEM', customerName: 'Raju', confidence: 0.9 });
+  const agent = createAgent({ service, interpret: async () => bad });
+  const r = await agent.newSession().handle('x');
+  assert.match(r.reply, /did not understand/i);
+});

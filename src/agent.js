@@ -3,22 +3,21 @@
 // It can only call service.propose*/approve/reject. It has no way to write events.
 import { validateIntent } from './ai/schema.js';
 import { canonicalItem } from './ai/lexicon.js';
-
-const inr = (n) => `₹${n}`;
+import { render, formatMoney } from './i18n/messages.js';
 
 export function createAgent({ service, interpret }) {
     return {
         newSession() {
-            const ctx = { customerId: null, pending: null }; // initial / default id and whether there is a pending confirmation
+            const ctx = { customerId: null, pending: null, lang: 'en' };
             const nameOf = (cid) => service.getLedger(cid).customer.name; // gets customer id
+            const message = (key, params = {}, lang = ctx.lang) => render(key, params, lang);
+            const money = (amount, lang = ctx.lang) => formatMoney(amount, service.currency ?? process.env.CURRENCY ?? 'INR', lang);
 
             const resolveCustomer = (name) => {
-                if (!name) {
-                    return ctx.customerId ? { ok: true, id: ctx.customerId } : { ok: false, reply: 'Kis customer ke liye?' };
-                }
+                if (!name) return ctx.customerId ? { ok: true, id: ctx.customerId } : { ok: false, reply: message('whichCustomer') };
                 const found = service.findCustomers(name);
-                if (found.length === 0) return { ok: false, reply: `"${name}" naam ka customer nahi mila.` };
-                if (found.length > 1) return { ok: false, reply: `Kaun sa ${name}? ${found.map((c) => c.name).join(' ya ')}?` };
+                if (found.length === 0) return { ok: false, reply: message('customerNotFound', { name }) };
+                if (found.length > 1) return { ok: false, reply: message('ambiguousCustomer', { query: name, matches: found.map((c) => c.name).join(message('itemJoiner')) }) };
                 return { ok: true, id: found[0].id };
             };
 
@@ -30,18 +29,19 @@ export function createAgent({ service, interpret }) {
                     digest: res.proposal.digest, // proposal fingerprint/digest
                     kind: res.proposal.kind, // what kind of action
                     customerId: res.proposal.customerId, // which customer
-                    display: res.proposal.display // what to display
+                    display: res.proposal.display, // what to display
+                    lang: ctx.lang,
                 };         
                 return { reply: res.proposal.readBack, proposal: res.proposal };
             };
 
             const balanceLine = (cid) => {
                 const { customer, ledger: l } = service.getLedger(cid);
-                if (l.status === 'CLEAR') return `${customer.name} ka koi balance baaki nahi hai.`;
-                let s = `${customer.name} ka outstanding balance ${inr(l.balance)} hai.`;
-                if (l.disputedAmount) s += ` Isme ${inr(l.disputedAmount)} dispute me hai.`;
-                if (l.isOverdue) s += ' Ye overdue hai.';
-                return s;
+                if (l.status === 'CLEAR') return message('balanceClear', { customer: customer.name });
+                const disputed = l.disputedAmount
+                    ? message('balanceDisputed', { disputed: money(l.disputedAmount) }) : '';
+                const overdue = l.isOverdue ? message('overdueSuffix') : '';
+                return message('balanceOutstanding', { customer: customer.name, balance: money(l.balance), disputed, overdue });
             };
 
             return {
@@ -50,7 +50,7 @@ export function createAgent({ service, interpret }) {
                 open() {
                     const s = service.sessionOpen();
                     const lines = s.overdue.filter((x) => x.newlyOverdue).map((x) =>
-                        `${x.customer.name} ka credit overdue hai. Outstanding ${inr(x.ledger.overdueEligibleAmount)} hai.`);
+                        message('overdueBriefing', { customer: x.customer.name, amount: money(x.ledger.overdueEligibleAmount) }));
                     return { reply: lines.join(' ') || null, overdue: s.overdue, clock: s.clock };
                 },
 
@@ -60,45 +60,52 @@ export function createAgent({ service, interpret }) {
                         lastCustomer: ctx.customerId ? nameOf(ctx.customerId) : null,
                     });
                     const checked = validateIntent(raw);
-                    if (!checked.ok) return { reply: 'Samajh nahi aaya, dobara bolo?', intent: null, errors: checked.errors };
+                    if (!checked.ok) return { reply: message('didntUnderstand'), intent: null, errors: checked.errors };
                     const intent = checked.value;
+                    const knownLanguages = ['en', 'hi', 'es', 'pt', 'fr', 'id', 'sw'];
+                    if (intent.lang != null) {
+                        const spokenLanguage = intent.lang.toLowerCase();
+                        if (spokenLanguage === 'hi') ctx.lang = /[\u0900-\u097F]/.test(transcript) ? 'hi' : 'hinglish';
+                        else ctx.lang = knownLanguages.includes(spokenLanguage) ? spokenLanguage : 'en';
+                    }
+                    const lang = ctx.lang;
                     const m = {
-                        channel: meta.channel ?? 'TEXT', transcript, language: intent.language,
+                        channel: meta.channel ?? 'TEXT', transcript, language: intent.lang ?? intent.language, lang,
                         speakerId: meta.speakerId ?? null, confidence: intent.confidence, extractedEntities: intent,
                     };
                     const out = (o) => ({ intent, ...o });
 
-                    if (intent.intent === 'UNKNOWN') return out({ reply: 'Samajh nahi aaya, dobara bolo?' });
+                    if (intent.intent === 'UNKNOWN') return out({ reply: message('didntUnderstand') });
                     const writes = ['RECORD_CREDIT', 'RECORD_PAYMENT', 'CORRECT_ITEM', 'OPEN_DISPUTE'];
                     if (writes.includes(intent.intent) && intent.confidence < 0.6) {
-                        return out({ reply: 'Pakka samajh nahi aaya. Dobara bolenge?' }); // never write on low confidence
+                        return out({ reply: message('lowConfidence') }); // never write on low confidence
                     }
 
                     switch (intent.intent) {
                         case 'CONFIRM': {
-                            if (!ctx.pending) return out({ reply: 'Abhi confirm karne ko kuch nahi hai.' });
+                            if (!ctx.pending) return out({ reply: message('nothingToConfirm') });
                             // The UI must have SHOWN the proposal before the user said "haan".
                             // The digest ties this yes to exactly that proposal.
                             const p = ctx.pending;
-                            const res = service.approve(p.id, { digest: p.digest });
+                            const res = service.approve(p.id, { digest: p.digest, lang: p.lang });
                             if (!res.ok) { ctx.pending = null; return out({ reply: res.message, error: res }); }
                             ctx.pending = null;
                             const l = res.ledger;
                             const name = nameOf(p.customerId);
                             const lines = {
-                                CREDIT: `Record ho gaya. ${name} ka balance ${inr(l.balance)} hai.`,
-                                PAYMENT: `Payment record ho gaya. ${name} ka balance ${inr(l.balance)} hai.`,
-                                CORRECTION: `Correction lag gayi. ${name} ka balance ab ${inr(l.balance)} hai.`,
-                                DISPUTE_OPEN: `${name} ne dispute kiya hai. Maine ise payment record nahi kiya. Balance ${inr(l.balance)} hi hai.`,
-                                DISPUTE_RESOLVE: `Dispute band ho gaya. ${name} ka balance ${inr(l.balance)} hai.`,
+                                CREDIT: message('recordedCredit', { customer: name, balance: money(l.balance) }, p.lang),
+                                PAYMENT: message('recordedPayment', { customer: name, balance: money(l.balance) }, p.lang),
+                                CORRECTION: message('recordedCorrection', { customer: name, balance: money(l.balance) }, p.lang),
+                                DISPUTE_OPEN: message('recordedDispute', { customer: name, balance: money(l.balance) }, p.lang),
+                                DISPUTE_RESOLVE: message('recordedDisputeResolution', { customer: name, balance: money(l.balance) }, p.lang),
                             };
                             return out({ reply: lines[p.kind], committed: res.events, ledger: l });
                         }
                         case 'REJECT': {
-                            if (!ctx.pending) return out({ reply: 'Theek hai.' });
+                            if (!ctx.pending) return out({ reply: message('okay') });
                             service.reject(ctx.pending.id);
                             ctx.pending = null;
-                            return out({ reply: 'Theek hai, cancel kar diya.' });
+                            return out({ reply: message('cancelled') });
                         }
                         case 'QUERY_BALANCE': {
                             const r = resolveCustomer(intent.customerName);
@@ -108,8 +115,9 @@ export function createAgent({ service, interpret }) {
                         }
                         case 'QUERY_OVERDUE': {
                             const list = service.overdueAccounts();
-                            if (!list.length) return out({ reply: 'Koi account overdue nahi hai.' });
-                            return out({ reply: list.map((x) => `${x.customer.name}: ${inr(x.ledger.overdueEligibleAmount)} overdue`).join(', ') + '.' });
+                            if (!list.length) return out({ reply: message('noOverdue') });
+                            const items = list.map((x) => message('overdueListItem', { customer: x.customer.name, amount: money(x.ledger.overdueEligibleAmount) }));
+                            return out({ reply: items.join(message('overdueJoiner')) + '.' });
                         }
                         case 'RECORD_CREDIT': {
                             const r = resolveCustomer(intent.customerName);
@@ -141,7 +149,7 @@ export function createAgent({ service, interpret }) {
                             return out(setPending(service.proposeDispute({ customerId: r.id, amount: intent.amount, meta: m })));
                         }
                         default:
-                            return out({ reply: 'Samajh nahi aaya, dobara bolo?' });
+                            return out({ reply: message('didntUnderstand') });
                     }
                 },
             };

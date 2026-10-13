@@ -1,5 +1,6 @@
 node_modules/
 .env
+eval/results/
 data/*.jsonl
 eval/recordings/
 *.wav

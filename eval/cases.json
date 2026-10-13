@@ -1,0 +1,871 @@
+[
+  {
+    "id": "demo-001",
+    "note": "Full demo story: credit, correction, overdue, dispute",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 800 rupaye udhaar likh do, chawal 600 aur tel 200 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "newSession": true
+      },
+      {
+        "say": "Raju ka balance kya hai?"
+      },
+      {
+        "say": "Nahi, tel 200 nahi, 120 ka tha."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "clockDays": 15
+      },
+      {
+        "say": "Raju bol raha hai usne 300 rupaye de diye the."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 720,
+      "status": "DISPUTED",
+      "disputedAmount": 300,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "pay-001",
+    "note": "Partial payment reduces balance",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 500 rupaye udhaar likh do, dal 500 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Raju ne 200 rupaye diye."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "corr-wrong-old-001",
+    "note": "Speaker misstates the old amount: system must NOT write a correction",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 800 rupaye udhaar likh do, chawal 600 aur tel 200 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Nahi, tel 150 nahi, 120 ka tha."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 800,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "reject-001",
+    "note": "User says no: nothing is written",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 300 rupaye udhaar likh do, chai 300 ka."
+      },
+      {
+        "say": "Nahi."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "hl-spoken-amount",
+    "note": "Spoken-word amounts (paanch sau, do sau)",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Amit ko paanch sau rupaye udhaar likh do, chawal 500 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Amit ne do sau rupaye diye."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "hl-confirm-nothing-pending",
+    "note": "Bare yes with nothing pending writes nothing",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "hl-unknown-customer",
+    "note": "Unknown customer name: nothing written",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Mohan ko 400 rupaye udhaar likh do."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "hl-ambiguous-customer",
+    "note": "Two customers match the prefix: nothing written",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      },
+      {
+        "name": "Rajesh",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raj ko 300 rupaye udhaar likh do."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "hl-garbage",
+    "note": "Off-topic speech writes nothing",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Aaj mausam bahut accha hai."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "hl-dispute-no-amount",
+    "note": "Dispute with no amount stated: must not invent one",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 600 rupaye udhaar likh do, dal 600 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Raju bol raha hai usne already de diya."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 600,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "hl-dispute-not-payment",
+    "note": "A claim of payment opens a dispute, never a payment",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 500 rupaye udhaar likh do, tel 500 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Raju bol raha hai usne 200 rupaye de diye the."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 500,
+      "status": "DISPUTED",
+      "disputedAmount": 200,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "hl-overdue",
+    "note": "Overdue is computed from dates after 15 days",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 700 rupaye udhaar likh do, chini 700 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "clockDays": 15
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 700,
+      "status": "OVERDUE",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "hl-correct-then-pay",
+    "note": "Correction then payment",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 800 rupaye udhaar likh do, chawal 600 aur tel 200 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Nahi, tel 200 nahi, 120 ka tha."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Raju ne 300 rupaye diye."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 420,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "hl-new-request-replaces-pending",
+    "note": "A new request replaces an unconfirmed one",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 300 rupaye udhaar likh do, chai 300 ka."
+      },
+      {
+        "say": "Raju ko 500 rupaye udhaar likh do, dal 500 ka."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 500,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "mixed-lang-session",
+    "note": "Hinglish request, English confirmations",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 400 rupaye udhaar likh do, atta 400 ka."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Raju paid 100."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "en-credit-pay",
+    "note": "English credit then payment",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Put 450 on Amit's tab for rice."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Amit paid 150."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "en-dispute",
+    "note": "English: claim of payment is a dispute",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju owes me 900 for oil and flour."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Raju says he already paid 400."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 900,
+      "status": "DISPUTED",
+      "disputedAmount": 400,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "en-reject",
+    "note": "English: no writes nothing",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Add 250 credit for Amit, sugar."
+      },
+      {
+        "say": "No."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "en-correction",
+    "note": "English item correction",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju took 700 of goods: rice 500 and sugar 200."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "No wait, sugar was 150, not 200."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 650,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION"
+      ]
+    }
+  },
+  {
+    "id": "es-credit-pay",
+    "note": "Spanish: credit then payment, spoken number",
+    "customers": [
+      {
+        "name": "Carlos",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Anótale a Carlos 500 de fiado, aceite 500."
+      },
+      {
+        "say": "Sí."
+      },
+      {
+        "say": "Carlos pagó doscientos."
+      },
+      {
+        "say": "Sí."
+      }
+    ],
+    "expect": {
+      "customer": "Carlos",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "es-dispute",
+    "note": "Spanish: claim of payment is a dispute",
+    "customers": [
+      {
+        "name": "Carlos",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Carlos me debe 800, arroz 800."
+      },
+      {
+        "say": "Sí."
+      },
+      {
+        "say": "Carlos dice que ya pagó 300."
+      },
+      {
+        "say": "Sí."
+      }
+    ],
+    "expect": {
+      "customer": "Carlos",
+      "balance": 800,
+      "status": "DISPUTED",
+      "disputedAmount": 300,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "es-reject",
+    "note": "Spanish: no writes nothing (accented name)",
+    "customers": [
+      {
+        "name": "María",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Apunta 400 de fiado a María."
+      },
+      {
+        "say": "No."
+      }
+    ],
+    "expect": {
+      "customer": "María",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "pt-credit-pay",
+    "note": "Portuguese: credit then payment, spoken number",
+    "customers": [
+      {
+        "name": "Joana",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Anota 500 na conta da Joana, óleo 500."
+      },
+      {
+        "say": "Sim."
+      },
+      {
+        "say": "A Joana pagou duzentos."
+      },
+      {
+        "say": "Sim."
+      }
+    ],
+    "expect": {
+      "customer": "Joana",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "id-credit-pay",
+    "note": "Indonesian: credit then payment, spoken number",
+    "customers": [
+      {
+        "name": "Budi",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Catat utang Budi 500, beras 500."
+      },
+      {
+        "say": "Ya."
+      },
+      {
+        "say": "Budi bayar dua ratus."
+      },
+      {
+        "say": "Ya."
+      }
+    ],
+    "expect": {
+      "customer": "Budi",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "sw-credit-pay",
+    "note": "Swahili: credit then payment, spoken number",
+    "customers": [
+      {
+        "name": "Juma",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Mwandikie Juma deni la shilingi mia tano, mafuta mia tano."
+      },
+      {
+        "say": "Ndiyo."
+      },
+      {
+        "say": "Juma amelipa mia mbili."
+      },
+      {
+        "say": "Ndiyo."
+      }
+    ],
+    "expect": {
+      "customer": "Juma",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "fr-credit-pay",
+    "note": "French: credit then payment, spoken number",
+    "customers": [
+      {
+        "name": "Aminata",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Note 500 de crédit pour Aminata, huile 500."
+      },
+      {
+        "say": "Oui."
+      },
+      {
+        "say": "Aminata a payé deux cents."
+      },
+      {
+        "say": "Oui."
+      }
+    ],
+    "expect": {
+      "customer": "Aminata",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "hi-devanagari",
+    "note": "Hindi in Devanagari: name must map to the Latin customer name",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "राजू को पाँच सौ रुपये उधार लिखो, तेल पाँच सौ का।"
+      },
+      {
+        "say": "हाँ।"
+      },
+      {
+        "say": "राजू ने दो सौ रुपये दिए।"
+      },
+      {
+        "say": "हाँ।"
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  }
+]

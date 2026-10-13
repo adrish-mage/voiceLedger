@@ -8,10 +8,10 @@ const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1).toLowerCase() : null);
 
 export async function interpretMock(transcript /* , context */) {
   const t = transcript.trim();
-  const base = (over) => emptyIntent({ confidence: 0.9, ...over });
+  const base = (over, lang = 'hi') => emptyIntent({ confidence: 0.9, lang, ...over });
 
-  if (/^(haan|han|ha|yes|ok|okay|theek hai|kar do)[.! ]*$/i.test(t)) return base({ intent: 'CONFIRM' });
-  if (/^(nahi|nahin|no|cancel|rehne do)[.! ]*$/i.test(t)) return base({ intent: 'REJECT' });
+  if (/^(haan|han|ha|yes|ok|okay|theek hai|kar do)[.! ]*$/i.test(t)) return base({ intent: 'CONFIRM' }, null);
+  if (/^(nahi|nahin|no|cancel|rehne do)[.! ]*$/i.test(t)) return base({ intent: 'REJECT' }, null);
 
   // "Nahi, tel 200 nahi, 120 ka tha."
   let m = t.match(/([a-z]+)\s+(\d+)\s+(?:nahi|nahin)[,\s]+(\d+)/i);
@@ -41,6 +41,6 @@ export async function interpretMock(transcript /* , context */) {
   m = t.match(/^(\w+)\s+ka\s+(?:balance|hisaab|hisab|status)/i);
   if (m) return base({ intent: 'QUERY_BALANCE', customerName: cap(m[1]) });
 
-  if (/overdue/i.test(t)) return base({ intent: 'QUERY_OVERDUE' });
+  if (/overdue/i.test(t)) return base({ intent: 'QUERY_OVERDUE' }, 'en');
   return emptyIntent({ intent: 'UNKNOWN', ambiguity: 'mock interpreter did not match' });
 }
