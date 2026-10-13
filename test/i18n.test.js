@@ -23,6 +23,11 @@ test('money formatting respects currency and omits fractional digits', () => {
   assert.equal(formatMoney(1234.7, 'INR', 'en'), '₹1,235');
   assert.equal(formatMoney(1234.7, 'USD', 'en'), '$1,235');
   assert.equal(formatMoney(1234.7, 'KES', 'sw'), 'Ksh 1,235');
+  for (const language of Object.keys(messages)) {
+    const formatted = formatMoney(1234.7, 'USD', language);
+    assert.ok(formatted.includes('$'), `${language}: ${formatted}`);
+    assert.ok(!formatted.includes('US$'), `${language}: ${formatted}`);
+  }
 });
 
 test('render falls back to English for unsupported language and key', () => {

@@ -38,7 +38,7 @@ Hard rules:
 Items rules:
 - Items are goods only (rice, oil, sugar). Words meaning record, note, write, credit, debt or tab (anota, apunta, catat, note, likh do, deni) are commands, never items.
 - Include items only if each item's price is stated and the prices add up exactly to amount. Otherwise set items to null.
-- name: the item as spoken, lowercase, singular, Latin script.
+- name: the item as spoken, lowercase, singular, in the speaker's own script. Do not transliterate or translate.
 - quantity: a number only if the speaker states one, else null.
 - totalAmount: the amount for that item. With a single item it equals amount.
 - amount is the total for this sentence. Never add an item price on top of it.

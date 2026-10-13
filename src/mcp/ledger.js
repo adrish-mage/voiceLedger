@@ -5,20 +5,21 @@ import { z } from 'zod';
 import { pathToFileURL } from 'node:url';
 import { createStore } from '../ledger/store.js';
 import { createLedgerService } from '../ledger/service.js';
+import { render } from '../i18n/messages.js';
 
 const proposalInstruction = 'Read the readBack text to the user and wait for an explicit yes before calling approve_proposal. Never approve on your own.';
 
 const textResult = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 const errorResult = (message) => ({ content: [{ type: 'text', text: message }], isError: true });
 
-function resolveCustomer(service, customerName) {
+function resolveCustomer(service, customerName, language = 'en') {
   const matches = service.findCustomers(customerName);
   if (matches.length === 1) return { customer: matches[0] };
   const candidates = matches.map((customer) => customer.name);
   if (matches.length === 0) {
-    return { error: `No customer matched "${customerName}". Candidates: none. Please provide a customer name.` };
+    return { error: render('customerNotFound', { name: customerName }, language) };
   }
-  return { error: `"${customerName}" matched several customers: ${candidates.join(', ')}. Which one do you mean?` };
+  return { error: render('ambiguousCustomer', { query: customerName, matches: candidates.join(render('overdueJoiner', {}, language)) }, language) };
 }
 
 function registerTools(server, service) {
@@ -60,9 +61,10 @@ function registerTools(server, service) {
       description: `${description} ${proposalInstruction}`,
       inputSchema,
     }, async (input) => {
-      const resolved = resolveCustomer(service, input.customerName);
+      const language = input.language ?? 'en';
+      const resolved = resolveCustomer(service, input.customerName, language);
       if (resolved.error) return errorResult(resolved.error);
-      const result = propose({ ...input, customerId: resolved.customer.id });
+      const result = propose({ ...input, customerId: resolved.customer.id, meta: { lang: language } });
       if (!result.ok) return errorResult(result.message);
       const { id: proposalId, digest, readBack, display, warnings } = result.proposal;
       const structuredContent = { proposalId, digest, readBack, display, warnings };
@@ -72,6 +74,7 @@ function registerTools(server, service) {
 
   registerProposal('propose_credit', 'Propose a credit entry without writing to the ledger.', {
     customerName: z.string().min(1),
+    language: z.enum(['en', 'hinglish', 'hi', 'es', 'pt', 'fr', 'id', 'sw']).default('en'),
     amount: z.number().int().positive(),
     items: z.array(z.object({
       name: z.string().min(1),
@@ -79,26 +82,29 @@ function registerTools(server, service) {
       totalAmount: z.number().int().positive(),
     })).optional(),
     dueDate: z.string().optional(),
-  }, ({ customerId, amount, items, dueDate }) => service.proposeCredit({ customerId, amount, items, dueDate }));
+  }, ({ customerId, amount, items, dueDate, meta }) => service.proposeCredit({ customerId, amount, items, dueDate, meta }));
 
   registerProposal('propose_payment', 'Propose a payment without writing to the ledger.', {
     customerName: z.string().min(1),
+    language: z.enum(['en', 'hinglish', 'hi', 'es', 'pt', 'fr', 'id', 'sw']).default('en'),
     amount: z.number().int().positive(),
-  }, ({ customerId, amount }) => service.proposePayment({ customerId, amount }));
+  }, ({ customerId, amount, meta }) => service.proposePayment({ customerId, amount, meta }));
 
   registerProposal('propose_correction', 'Propose an item correction without writing to the ledger.', {
     customerName: z.string().min(1),
+    language: z.enum(['en', 'hinglish', 'hi', 'es', 'pt', 'fr', 'id', 'sw']).default('en'),
     itemName: z.string().min(1),
     newTotalAmount: z.number().int().nonnegative(),
     claimedOldTotal: z.number().int().nonnegative().optional(),
-  }, ({ customerId, itemName, newTotalAmount, claimedOldTotal }) => service.proposeCorrection({
-    customerId, itemName, newTotalAmount, claimedOldTotal,
+  }, ({ customerId, itemName, newTotalAmount, claimedOldTotal, meta }) => service.proposeCorrection({
+    customerId, itemName, newTotalAmount, claimedOldTotal, meta,
   }));
 
   registerProposal('propose_dispute', 'Propose opening a payment dispute without writing to the ledger.', {
     customerName: z.string().min(1),
+    language: z.enum(['en', 'hinglish', 'hi', 'es', 'pt', 'fr', 'id', 'sw']).default('en'),
     amount: z.number().int().positive(),
-  }, ({ customerId, amount }) => service.proposeDispute({ customerId, amount }));
+  }, ({ customerId, amount, meta }) => service.proposeDispute({ customerId, amount, meta }));
 
   server.registerTool('approve_proposal', {
     description: 'Approve a pending proposal using its exact digest.',

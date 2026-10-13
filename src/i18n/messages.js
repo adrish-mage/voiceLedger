@@ -461,6 +461,7 @@ export function formatMoney(amount, currency = process.env.CURRENCY || 'INR', la
   return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: String(currency).toUpperCase(),
+    currencyDisplay: 'narrowSymbol',
     maximumFractionDigits: 0,
   }).format(amount);
 }

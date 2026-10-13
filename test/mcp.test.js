@@ -99,3 +99,17 @@ test('raw initialize negotiates protocol version 2025-11-25', async (t) => {
   const result = JSON.parse(data);
   assert.equal(result.result.protocolVersion, '2025-11-25');
 });
+
+test('propose_credit renders a Spanish read-back when language is es', async (t) => {
+  const ctx = await setup();
+  t.after(() => ctx.close());
+  const proposed = await call(ctx.client, 'propose_credit', {
+    customerName: 'Raju',
+    amount: 100,
+    language: 'es',
+  });
+  const { readBack } = proposed.structuredContent;
+  assert.match(readBack, /crédito/);
+  assert.match(readBack, /Raju/);
+  assert.match(readBack, /100/);
+});
