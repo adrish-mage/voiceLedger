@@ -157,6 +157,9 @@ await check('No eval phrase leaked into the interpreter prompt', () => {
   const bad = ['mia tano', 'mia mbili', 'amelipa mia', 'pagou duzentos', 'catat utang', 'dice que', 'bol raha hai', 'sudah bayar']
     .filter((p) => text.includes(`"${p}"`));
   assert(!bad.length, 'specific eval phrases in prompt: ' + bad.join(', '));
+  const generic = new Set(['hai usne']);
+  const shared = [...text.matchAll(/^\s+"([^"]+)"\s+<-/gm)].map((m) => m[1]).filter((p) => !generic.has(p));
+  if (shared.length) return { warn: 'review these phrases shared with eval sentences: ' + shared.join(', ') };
 });
 
 for (const [label, file] of [['dev', 'eval/cases.json'], ['holdout v1', 'eval/cases.holdout.json'], ['holdout v2', 'eval/cases.holdout2.json']]) {

@@ -11,6 +11,7 @@ Intent shape:
 {
   intent: one of INTENTS,
   customerName: string | null,
+  customerSpoken?: boolean,
   amount: integer | null,                       // rupees
   items: [{ name, quantity?, totalAmount }] | null,
   correction: { itemName, newTotalAmount, claimedOldTotal? } | null,
@@ -28,6 +29,7 @@ export function validateIntent(x) {
     if (!INTENTS.includes(x.intent)) errors.push(`bad intent: ${x.intent}`);
     if (x.intent === 'CORRECT_ITEM' && !x.correction) errors.push('CORRECT_ITEM needs correction');
     if (x.customerName != null && typeof x.customerName !== 'string') errors.push('customerName must be string|null');
+    if (x.customerSpoken !== undefined && typeof x.customerSpoken !== 'boolean') errors.push('customerSpoken must be boolean|undefined');
     if (x.amount != null && !isInt(x.amount)) errors.push('amount must be integer|null');
     if (x.items != null) {
         if (!Array.isArray(x.items)) errors.push('items must be array|null');

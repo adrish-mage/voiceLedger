@@ -13,7 +13,8 @@ export function createAgent({ service, interpret }) {
             const message = (key, params = {}, lang = ctx.lang) => render(key, params, lang);
             const money = (amount, lang = ctx.lang) => formatMoney(amount, service.currency ?? process.env.CURRENCY ?? 'INR', lang);
 
-            const resolveCustomer = (name) => {
+            const resolveCustomer = (name, spoken) => {
+                if (name == null && spoken === true) return { ok: false, reply: message('whichCustomer') };
                 if (!name) return ctx.customerId ? { ok: true, id: ctx.customerId } : { ok: false, reply: message('whichCustomer') };
                 const found = service.findCustomers(name);
                 if (found.length === 0) return { ok: false, reply: message('customerNotFound', { name }) };
@@ -108,7 +109,7 @@ export function createAgent({ service, interpret }) {
                             return out({ reply: message('cancelled') });
                         }
                         case 'QUERY_BALANCE': {
-                            const r = resolveCustomer(intent.customerName);
+                            const r = resolveCustomer(intent.customerName, intent.customerSpoken);
                             if (!r.ok) return out({ reply: r.reply });
                             ctx.customerId = r.id;
                             return out({ reply: balanceLine(r.id), ledger: service.getLedger(r.id).ledger });
@@ -120,20 +121,20 @@ export function createAgent({ service, interpret }) {
                             return out({ reply: items.join(message('overdueJoiner')) + '.' });
                         }
                         case 'RECORD_CREDIT': {
-                            const r = resolveCustomer(intent.customerName);
+                            const r = resolveCustomer(intent.customerName, intent.customerSpoken);
                             if (!r.ok) return out({ reply: r.reply });
                             ctx.customerId = r.id;
                             const items = (intent.items ?? []).map((i) => ({ ...i, name: canonicalItem(i.name) ?? i.name }));
                             return out(setPending(service.proposeCredit({ customerId: r.id, amount: intent.amount, items, dueDate: intent.dueDate, meta: m })));
                         }
                         case 'RECORD_PAYMENT': {
-                            const r = resolveCustomer(intent.customerName);
+                            const r = resolveCustomer(intent.customerName, intent.customerSpoken);
                             if (!r.ok) return out({ reply: r.reply });
                             ctx.customerId = r.id;
                             return out(setPending(service.proposePayment({ customerId: r.id, amount: intent.amount, meta: m })));
                         }
                         case 'CORRECT_ITEM': {
-                            const r = resolveCustomer(intent.customerName);
+                            const r = resolveCustomer(intent.customerName, intent.customerSpoken);
                             if (!r.ok) return out({ reply: r.reply });
                             ctx.customerId = r.id;
                             const c = intent.correction;
@@ -143,7 +144,7 @@ export function createAgent({ service, interpret }) {
                             })));
                         }
                         case 'OPEN_DISPUTE': {
-                            const r = resolveCustomer(intent.customerName);
+                            const r = resolveCustomer(intent.customerName, intent.customerSpoken);
                             if (!r.ok) return out({ reply: r.reply });
                             ctx.customerId = r.id;
                             return out(setPending(service.proposeDispute({ customerId: r.id, amount: intent.amount, meta: m })));

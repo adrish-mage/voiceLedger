@@ -235,6 +235,57 @@ test('END TO END: the demo story through the agent', async () => {
   assert.equal(store.all().filter((e) => e.type === 'PAYMENT_RECEIVED').length, 0);
   assert.deepEqual(checkInvariants(store.all(), new Date(Date.parse(T0) + 15 * DAY)), []);
 });
+
+test('an implied customer on a correction uses the customer already under discussion', async () => {
+  const { service, store, raju } = setup();
+  const intents = [
+    emptyIntent({
+      intent: 'RECORD_CREDIT',
+      customerName: 'Raju',
+      customerSpoken: true,
+      amount: 500,
+      items: [{ name: 'rice', totalAmount: 500 }],
+      confidence: 0.9,
+    }),
+    emptyIntent({ intent: 'CONFIRM', confidence: 0.9 }),
+    emptyIntent({
+      intent: 'CORRECT_ITEM',
+      customerName: null,
+      customerSpoken: false,
+      correction: { itemName: 'rice', newTotalAmount: 400, claimedOldTotal: 500 },
+      confidence: 0.9,
+    }),
+  ];
+  const agent = createAgent({ service, interpret: async () => intents.shift() }).newSession();
+
+  await agent.handle('Raju borrowed 500');
+  await agent.handle('yes');
+  const correction = await agent.handle('Sorry, the rice was 400, not 500');
+
+  assert.equal(correction.proposal.kind, 'CORRECTION');
+  assert.equal(correction.proposal.customerId, raju.id);
+  assert.equal(store.all().length, 1);
+});
+
+test('a spoken but unresolved customer never falls back to the session customer', async () => {
+  const { service, store, raju } = setup();
+  const intents = [
+    emptyIntent({ intent: 'RECORD_CREDIT', customerName: 'Raju', customerSpoken: true, amount: 500, confidence: 0.9 }),
+    emptyIntent({ intent: 'CONFIRM', confidence: 0.9 }),
+    emptyIntent({ intent: 'RECORD_CREDIT', customerName: null, customerSpoken: true, amount: 100, confidence: 0.9 }),
+  ];
+  const agent = createAgent({ service, interpret: async () => intents.shift() }).newSession();
+
+  await agent.handle('Raju borrowed 500');
+  await agent.handle('yes');
+  const unresolved = await agent.handle('He borrowed 100');
+
+  assert.match(unresolved.reply, /which customer/i);
+  assert.equal(unresolved.proposal, undefined);
+  assert.equal(store.all().length, 1);
+  assert.equal(service.getLedger(raju.id).ledger.balance, 500);
+});
+
 import { emptyIntent } from '../src/ai/schema.js';
 import { detectLanguage } from '../src/ai/interpret.llm.js';
 

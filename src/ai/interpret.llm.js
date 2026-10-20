@@ -12,6 +12,7 @@ Return ONLY one JSON object. No markdown, no code fences, no explanation.
 Fields:
 intent: RECORD_CREDIT | RECORD_PAYMENT | CORRECT_ITEM | OPEN_DISPUTE | QUERY_BALANCE | QUERY_OVERDUE | CONFIRM | REJECT | UNKNOWN
 customerName: string or null (must be exactly one of the known customers, else null)
+customerSpoken: true if the sentence contains a customer's name (even one not in the known list); false if the customer is only implied (he, she, usne, él, ela, dia, yeye, elle) or not mentioned.
 amount: integer rupees or null
 items: [{name, quantity, totalAmount}] or null
 correction: {itemName, newTotalAmount, claimedOldTotal} or null
@@ -25,11 +26,12 @@ Hard rules:
 - A plain statement that someone paid ("X paid 75", "X ne sattar diye", "X pagó cien", "X membayar lima puluh") is RECORD_PAYMENT with that amount.
 - "X owes me N", "put N on X's tab", udhaar, fiado, utang, crédit, deni, "na conta" all mean RECORD_CREDIT, never a query.
 - Currency words and symbols are never needed. Ignore them.
-- In Swahili, "mia" means hundred, e.g. "mia saba" means 700.
+- In Swahili, "mia" means hundred, e.g. "mia nane" means 800.
 - "nahi, X nahi, Y tha" is CORRECT_ITEM with claimedOldTotal=X and newTotalAmount=Y.
 - Bare "haan"/"yes" is CONFIRM, bare "nahi"/"no" is REJECT.
 - For CONFIRM and REJECT, every other field must be null.
-- Use only this sentence and the "Most recent customer" line. Never fill customerName, amounts or item names from anything else.
+- If customerSpoken is false, customerName must be null; the app supplies the person under discussion.
+- Never fill customerName, amounts or item names from earlier turns.
 - customerName must match a known customer. If the spoken name is only a partial match or could match more than one known customer, set customerName to null and explain in ambiguity.
 - If a name, amount or item is unclear, set it to null and explain in ambiguity. Never guess.
 - Never compute balances, totals owed, or due dates yourself.
@@ -46,20 +48,21 @@ Items rules:
 Confidence rules:
 - Use 0.9 or above only when intent, customer and amount are all clear.
 - Use 0.5 or below when anything is null or ambiguous.
+- A null customerName with customerSpoken false never lowers confidence.
 
 Examples:
 - "Anota 230 en la cuenta de Pedro, pan 230" -> RECORD_CREDIT, Pedro, 230, items [{name: "pan", totalAmount: 230}]
 - "Nila membayar lima puluh" -> RECORD_PAYMENT, Nila, 50, items null
 - "Omar mengaku telah melunasi 80" -> OPEN_DISPUTE, Omar, 80, items null
-- "Musa alipe mia saba" -> RECORD_PAYMENT, Musa, 700, items null
+- "Musa alipe mia nane" -> RECORD_PAYMENT, Musa, 800, items null
 - "Sam took 450 of groceries on credit" -> RECORD_CREDIT, Sam, 450, items null`;
 
-export function buildMessages(transcript, { customers = [], lastCustomer = null } = {}) {
+export function buildMessages(transcript, { customers = [] } = {}) {
     return [
         { role: 'system', content: SYSTEM_PROMPT },
         {
             role: 'user',
-            content: `Known customers: ${customers.join(', ') || '(none)'}\nMost recent customer in this conversation: ${lastCustomer ?? '(none)'}\n\nSentence: ${transcript}`,
+            content: `Known customers: ${customers.join(', ') || '(none)'}\n\nSentence: ${transcript}`,
         },
     ];
 }
@@ -118,6 +121,9 @@ export async function interpretLLM(transcript, context) {
             const raw = await callModel(messages);
             const parsed = JSON.parse(raw.trim().replace(/^```json\s*|```$/g, '').trim());
             const json = { ...parsed, language: detectLanguage(transcript) };
+            const customerSpokenWasFalse = json.customerSpoken === false;
+            if (typeof json.customerName === 'string' && json.customerName.trim()) json.customerSpoken = true;
+            if (customerSpokenWasFalse) json.customerName = null;
             // CONFIRM/REJECT carry no payload; never trust fields the model adds.
             if (json.intent === 'CONFIRM' || json.intent === 'REJECT') {
                 json.customerName = null;

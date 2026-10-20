@@ -22,11 +22,11 @@ export async function interpretMock(transcript /* , context */) {
 
   // "Raju bol raha hai usne 300 rupaye de diye the."
   m = t.match(/^(\w+)\s+(?:bol raha|keh raha|kehta|says|claims)[^\d]*(\d+)/i);
-  if (m) return base({ intent: 'OPEN_DISPUTE', customerName: cap(m[1]), amount: +m[2] });
+  if (m) return base({ intent: 'OPEN_DISPUTE', customerName: cap(m[1]), customerSpoken: true, amount: +m[2] });
 
   // "Raju ne 500 diye."
   m = t.match(/^(\w+)\s+ne\s+(\d+)[^\d]*(?:diye|de diye|paid|jama)/i);
-  if (m) return base({ intent: 'RECORD_PAYMENT', customerName: cap(m[1]), amount: +m[2] });
+  if (m) return base({ intent: 'RECORD_PAYMENT', customerName: cap(m[1]), customerSpoken: true, amount: +m[2] });
 
   // "Raju ko 800 rupaye udhaar likh do, chawal 600 aur tel 200 ka."
   m = t.match(/^(\w+)\s+ko\s+(\d+)[^]*?udhaar([^]*)$/i);
@@ -34,12 +34,12 @@ export async function interpretMock(transcript /* , context */) {
     const items = [...m[3].matchAll(/([a-z]+)\s+(\d+)/gi)]
       .map((x) => ({ name: canonicalItem(x[1]), totalAmount: +x[2] }))
       .filter((i) => i.name);
-    return base({ intent: 'RECORD_CREDIT', customerName: cap(m[1]), amount: +m[2], items: items.length ? items : null });
+    return base({ intent: 'RECORD_CREDIT', customerName: cap(m[1]), customerSpoken: true, amount: +m[2], items: items.length ? items : null });
   }
 
   // "Raju ka balance kya hai?"
   m = t.match(/^(\w+)\s+ka\s+(?:balance|hisaab|hisab|status)/i);
-  if (m) return base({ intent: 'QUERY_BALANCE', customerName: cap(m[1]) });
+  if (m) return base({ intent: 'QUERY_BALANCE', customerName: cap(m[1]), customerSpoken: true });
 
   if (/overdue/i.test(t)) return base({ intent: 'QUERY_OVERDUE' }, 'en');
   return emptyIntent({ intent: 'UNKNOWN', ambiguity: 'mock interpreter did not match' });
