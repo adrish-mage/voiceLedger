@@ -65,7 +65,7 @@ export function buildMessages(transcript, { customers = [], lastCustomer = null 
 }
 
 // Sends one fresh request to Bedrock (no history) and resolves to the model's text.
-async function callModel(messages) {
+export async function callModel(messages, modelClient = client) {
     const systemMsgText = messages.find((m) => m.role === 'system').content;
     const chatMsg = messages.filter((m) => m.role !== 'system');
     const formatted = chatMsg.map((m) => ({
@@ -80,7 +80,22 @@ async function callModel(messages) {
         inferenceConfig: { temperature: 0, maxTokens: 2048 },
     });
 
-    const response = await client.send(command);
+    let response;
+    for (let attempt = 0; ; attempt++) {
+        try {
+            response = await modelClient.send(command);
+            break;
+        } catch (error) {
+            const retryable = [
+                'ThrottlingException',
+                'ServiceUnavailableException',
+                'ModelTimeoutException',
+                'InternalServerException',
+            ].includes(error?.name);
+            if (!retryable || attempt > 0) throw error;
+            await new Promise((resolve) => setTimeout(resolve, 600));
+        }
+    }
 
     const content = response.output?.message?.content ?? [];
     const block = content.find((b) => b.text);

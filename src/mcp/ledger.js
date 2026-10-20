@@ -2,12 +2,14 @@ import express from 'express';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { z } from 'zod';
+import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { createStore } from '../ledger/store.js';
 import { createLedgerService } from '../ledger/service.js';
 import { render } from '../i18n/messages.js';
 
 const proposalInstruction = 'Read the readBack text to the user and wait for an explicit yes before calling approve_proposal. Never approve on your own.';
+const packageInfo = createRequire(import.meta.url)('../../package.json');
 
 const textResult = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 const errorResult = (message) => ({ content: [{ type: 'text', text: message }], isError: true });
@@ -128,6 +130,13 @@ export function buildMcpApp({ service, authToken = process.env.MCP_AUTH_TOKEN ||
   const app = express();
   const allowedOrigins = new Set((process.env.MCP_ALLOWED_ORIGINS ?? '')
     .split(',').map((origin) => origin.trim()).filter(Boolean));
+
+  app.get('/health', (_req, res) => res.json({
+    ok: true,
+    interpreter: process.env.INTERPRETER === 'llm' ? 'llm' : 'mock',
+    currency: service.currency,
+    version: packageInfo.version,
+  }));
 
   app.use('/mcp', (req, res, next) => {
     const origin = req.get('origin');

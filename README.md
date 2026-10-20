@@ -21,30 +21,44 @@ flowchart LR
 - For the LLM-backed API and LLM evaluations: Amazon Bedrock access, an AWS bearer token, region, and model ID. The mock interpreter and ledger tests do not require Bedrock.
 - Speech-to-text is an upstream input to this prototype; the eval harness evaluates transcripts, not audio.
 
-## Setup and run
+## Quick start (no AWS key needed)
 
-From the repository root:
+Clone the repository and install dependencies:
 
-```powershell
-npm i
-Copy-Item .env.example .env
+```sh
+git clone https://github.com/adrish-mage/voiceLedger.git
+cd voiceLedger
+npm ci
+cp .env.example .env
 ```
 
-Fill in the Bedrock settings in `.env`, then start the LLM-backed API:
+Start the API from the repository root. With `INTERPRETER` unset, it uses the mock interpreter and does not need AWS credentials:
 
-```powershell
-npm run dev:llm
+```sh
+npm run dev
 ```
 
 In another terminal, start the web simulator:
 
-```powershell
+```sh
 cd web
-npm i
+npm ci
 npm run dev
 ```
 
-To start the hello-world MCP server, the currently defined command is `npm run mcp:hello`. The requested `npm run mcp` command is not currently defined in `package.json`. Run the tests from the repository root with `npm test`.
+In another terminal at the repository root, start the MCP server:
+
+```sh
+npm run mcp
+```
+
+Run the verification suite from the repository root (in a separate terminal):
+
+```sh
+npm run verify
+```
+
+`npm test` runs the unit tests. For the optional Bedrock-backed interpreter, configure the AWS and model settings in `.env`, set `INTERPRETER=llm`, then use `npm run dev:llm` or `npm run verify:llm`.
 
 ### Evaluations
 

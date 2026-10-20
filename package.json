@@ -11,7 +11,9 @@
     "eval": "node eval/run.js",
     "mcp:hello": "node src/mcp/hello.js",
     "mcp": "node --env-file=.env src/mcp/ledger.js",
-    "dev:llm": "node --env-file=.env src/api/server.js"
+    "dev:llm": "node --env-file=.env src/api/server.js",
+    "verify": "node scripts/verify-all.mjs",
+    "verify:llm": "node --env-file=.env scripts/verify-all.mjs --llm"
   },
   "engines": {
     "node": ">=20"

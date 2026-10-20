@@ -12,6 +12,7 @@ const locales = {
 export const messages = {
   en: {
     unknownCustomer: 'Unknown customer.',
+    service_unavailable: 'The service is temporarily unavailable. Please try again shortly.',
     badItem: 'An item needs a positive whole-number amount.',
     badCreditAmount: 'Amount must be a positive whole-number amount.',
     itemsMismatch: 'Items add up to {itemsTotal}, but the total is {total}.',
@@ -66,6 +67,7 @@ export const messages = {
   },
   hinglish: {
     unknownCustomer: 'Customer nahi mila.',
+    service_unavailable: 'Service abhi uplabdh nahi hai. Kripya thodi der baad phir koshish karein.',
     badItem: 'Item ka amount positive whole number hona chahiye.',
     badCreditAmount: 'Amount positive whole number hona chahiye.',
     itemsMismatch: 'Items ka total {itemsTotal} hai, par amount {total} hai.',
@@ -120,6 +122,7 @@ export const messages = {
   },
   hi: {
     unknownCustomer: 'ग्राहक नहीं मिला।',
+    service_unavailable: 'सेवा अभी उपलब्ध नहीं है। कृपया थोड़ी देर बाद फिर कोशिश करें।',
     badItem: 'आइटम की रकम धनात्मक पूर्ण संख्या होनी चाहिए।',
     badCreditAmount: 'रकम धनात्मक पूर्ण संख्या होनी चाहिए।',
     itemsMismatch: 'आइटम की कुल रकम {itemsTotal} है, लेकिन कुल रकम {total} है।',
@@ -174,6 +177,7 @@ export const messages = {
   },
   es: {
     unknownCustomer: 'Cliente desconocido.',
+    service_unavailable: 'El servicio no está disponible temporalmente. Inténtalo de nuevo pronto.',
     badItem: 'Un artículo debe tener un importe entero positivo.',
     badCreditAmount: 'El importe debe ser un número entero positivo.',
     itemsMismatch: 'Los artículos suman {itemsTotal}, pero el total es {total}.',
@@ -228,6 +232,7 @@ export const messages = {
   },
   pt: {
     unknownCustomer: 'Cliente desconhecido.',
+    service_unavailable: 'O serviço está temporariamente indisponível. Tente novamente em breve.',
     badItem: 'Um item precisa de um valor inteiro positivo.',
     badCreditAmount: 'O valor precisa ser um número inteiro positivo.',
     itemsMismatch: 'Os itens somam {itemsTotal}, mas o total é {total}.',
@@ -282,6 +287,7 @@ export const messages = {
   },
   fr: {
     unknownCustomer: 'Client inconnu.',
+    service_unavailable: 'Le service est temporairement indisponible. Veuillez réessayer bientôt.',
     badItem: 'Un article doit avoir un montant entier positif.',
     badCreditAmount: 'Le montant doit être un nombre entier positif.',
     itemsMismatch: 'Les articles totalisent {itemsTotal}, mais le total est {total}.',
@@ -336,6 +342,7 @@ export const messages = {
   },
   id: {
     unknownCustomer: 'Pelanggan tidak dikenal.',
+    service_unavailable: 'Layanan sedang tidak tersedia. Silakan coba lagi sebentar lagi.',
     badItem: 'Barang harus memiliki jumlah bilangan bulat positif.',
     badCreditAmount: 'Jumlah harus berupa bilangan bulat positif.',
     itemsMismatch: 'Jumlah barang adalah {itemsTotal}, tetapi totalnya {total}.',
@@ -390,6 +397,7 @@ export const messages = {
   },
   sw: {
     unknownCustomer: 'Mteja hajulikani.',
+    service_unavailable: 'Huduma haipatikani kwa muda. Tafadhali jaribu tena baada ya muda mfupi.',
     badItem: 'Bidhaa lazima iwe na kiasi kizima chanya.',
     badCreditAmount: 'Kiasi lazima kiwe namba nzima chanya.',
     itemsMismatch: 'Jumla ya bidhaa ni {itemsTotal}, lakini jumla kuu ni {total}.',

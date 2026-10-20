@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { createStore } from '../src/ledger/store.js';
 import { createLedgerService } from '../src/ledger/service.js';
 import { buildMcpApp } from '../src/mcp/ledger.js';
+
+const packageInfo = createRequire(import.meta.url)('../package.json');
 
 async function setup({ authToken = null, customers = ['Raju'] } = {}) {
   const store = createStore();
@@ -82,6 +85,19 @@ test('requires bearer token when configured', async (t) => {
     body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-11-25', capabilities: {}, clientInfo: { name: 'raw', version: '1.0.0' } } }),
   });
   assert.equal(response.status, 401);
+});
+
+test('health is available without MCP authentication', async (t) => {
+  const ctx = await setup({ authToken: 'test-secret' });
+  t.after(() => ctx.close());
+  const response = await fetch(new URL('/health', ctx.url));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    ok: true,
+    interpreter: process.env.INTERPRETER === 'llm' ? 'llm' : 'mock',
+    currency: ctx.service.currency,
+    version: packageInfo.version,
+  });
 });
 
 test('raw initialize negotiates protocol version 2025-11-25', async (t) => {
