@@ -62,32 +62,45 @@ npm run verify
 
 ### Evaluations
 
-`npm run eval` runs the sample transcript set using the mock interpreter. To run the dev set or holdout set with the LLM interpreter, set `CASES` and `INTERPRETER` before starting Node. In PowerShell:
+The development set was used for prompt tuning, mostly against GLM failures. The holdout set was written before tuning and was never used to tune. `scripts/check-leak.mjs` verifies that no full evaluation sentence appears in the model prompt. The holdout is the headline accuracy; development results are for tuning and comparison.
+
+## Evaluation results
+
+Each LLM row reports the three recorded runs in `eval/results/*.txt`. Invariant violations and extra-write cases are totals across those runs. Per-run elapsed times were not recorded in those files. The mock baseline is a fresh rules-only run on each set.
+
+| Interpreter / set | Run 1 cases passed | Run 2 cases passed | Run 3 cases passed | Range | Invariant violations total | Extra-write cases total | Seconds per run (1 / 2 / 3) |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Mock / dev (27 cases) | 15/27 | not run | not run | 15-15 | 0 | 0 | not run / not run / not run |
+| GLM 4.7 Flash / dev (27 cases) | 23/27 | 24/27 | 23/27 | 23-24 | 0 | 0 | not run / not run / not run |
+| gpt-oss-20b / dev (27 cases) | 27/27 | 25/27 | 27/27 | 25-27 | 0 | 0 | not run / not run / not run |
+| Mock / holdout (16 cases) | 5/16 | not run | not run | 5-5 | 0 | 0 | not run / not run / not run |
+| GLM 4.7 Flash / holdout (16 cases) | 12/16 | 12/16 | 12/16 | 12-12 | 0 | 0 | not run / not run / not run |
+| gpt-oss-20b / holdout (16 cases) | 13/16 | 12/16 | 13/16 | 12-13 | 0 | 0 | not run / not run / not run |
+
+### How to reproduce
+
+Run from the repository root in PowerShell. The mock commands reproduce the rules-only baseline. For LLM runs, put the corresponding Bedrock model ID and AWS settings in `.env`; execute each LLM command three times to collect three runs.
 
 ```powershell
+# Rules-only mock baseline: dev, then holdout
+$env:INTERPRETER = 'mock'
 $env:CASES = 'eval/cases.json'
-$env:INTERPRETER = 'llm'
-node --env-file=.env eval/run.js
+node eval/run.js
+$env:CASES = 'eval/cases.holdout.json'
+node eval/run.js
 
+# LLM: set BEDROCK_MODEL_ID in .env to GLM 4.7 Flash or gpt-oss-20b,
+# then run each dataset command three times per model
+$env:INTERPRETER = 'llm'
+$env:CASES = 'eval/cases.json'
+node --env-file=.env eval/run.js
 $env:CASES = 'eval/cases.holdout.json'
 node --env-file=.env eval/run.js
 ```
 
-Select the model using `BEDROCK_MODEL_ID` in `.env` before each run. The dev set was used for prompt tuning; the holdout set was not used for prompt tuning.
-
 ## Safety design
 
 The model only interprets the transcript into a schema-validated intent. It never writes events, approves a proposal, or computes a balance. The application creates the proposal; approval is bound to the exact proposal content by a digest, and only the approval path can append an event. Balances are derived by replaying the append-only event log. Ledger invariants are checked in tests and evaluations; the target and reported safety result is **0 invariant violations**.
-
-## Evaluation results
-
-Fill in the measured results after running each model. Use the same metrics for both sets; do not infer values from a partial run.
-
-| Interpreter / model | Dev set (pass / total; accuracy) | Dev invariant violations | Holdout set (pass / total; accuracy) | Holdout invariant violations |
-|---|---:|---:|---:|---:|
-| Mock | — | — | — | — |
-| GLM 4.7 Flash | — | — | — | — |
-| gpt-oss-20b | — | — | — | — |
 
 ## Ledger invariants
 
@@ -112,14 +125,14 @@ Fill in the measured results after running each model. Use the same metrics for 
 | `src/ai/interpret.llm.js` | Bedrock interpreter prompt and response handling. |
 | `eval/run.js` | Transcript evaluation harness and invariant checks. |
 
-## Known gaps
+## Known limitations
 
-- Whole rupees only; no paise yet.
-- The mock interpreter only understands the demo phrasings.
-- Customer matching is exact/prefix only, with no fuzzy matching.
-- Only the hello-world MCP server exists; the eight real tools are not wrapped yet.
-- Alexa+ device connection is unverified. The hello server completed a local MCP handshake reporting protocol 2025-11-25, which does not demonstrate Alexa+ connectivity. Current submission path is a self-hosted MCP server plus Alexa-style simulator.
-- No authentication; single shop owner.
+- Swahili dispute phrasing is unreliable on small models; the application fails safe.
+- Item names that match the alias list are shown in English in replies.
+- Single shop; no login.
+- Currency amounts use whole units only.
+- Non-English reply templates have not been reviewed by native speakers.
+- Not verified on a physical Alexa+ device; tested only with the MCP Inspector and a web simulator.
 
 ## License
 

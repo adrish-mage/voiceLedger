@@ -1,0 +1,556 @@
+[
+  {
+    "id": "h2-en-followup-payment",
+    "note": "Follow-up payment without naming the customer",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Amit took 700 of rice on credit."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "He paid 200 just now."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 500,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h2-en-followup-correction",
+    "note": "Follow-up correction without naming the customer",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Put 800 on Raju's account: flour 500 and soap 300."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Actually the soap was 250, not 300."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 750,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION"
+      ]
+    }
+  },
+  {
+    "id": "h2-es-followup-correction",
+    "note": "Spanish follow-up correction",
+    "customers": [
+      {
+        "name": "Carlos",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Carlos compró a crédito 900: arroz 600 y azúcar 300."
+      },
+      {
+        "say": "Sí."
+      },
+      {
+        "say": "No, el azúcar fueron 200, no 300."
+      },
+      {
+        "say": "Sí."
+      }
+    ],
+    "expect": {
+      "customer": "Carlos",
+      "balance": 800,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION"
+      ]
+    }
+  },
+  {
+    "id": "h2-pt-followup-payment",
+    "note": "Portuguese follow-up payment",
+    "customers": [
+      {
+        "name": "Joana",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Anota 600 para a Joana, feijão 600."
+      },
+      {
+        "say": "Sim."
+      },
+      {
+        "say": "Ela pagou cem."
+      },
+      {
+        "say": "Sim."
+      }
+    ],
+    "expect": {
+      "customer": "Joana",
+      "balance": 500,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h2-id-followup-dispute",
+    "note": "Indonesian follow-up dispute",
+    "customers": [
+      {
+        "name": "Budi",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Budi hutang 800, minyak 800."
+      },
+      {
+        "say": "Ya."
+      },
+      {
+        "say": "Dia bilang sudah bayar 300."
+      },
+      {
+        "say": "Ya."
+      }
+    ],
+    "expect": {
+      "customer": "Budi",
+      "balance": 800,
+      "status": "DISPUTED",
+      "disputedAmount": 300,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h2-hl-followup-dispute",
+    "note": "Hinglish follow-up dispute",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Amit ko 1000 rupaye udhaar likh do, chawal 1000 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Usne bola ki 400 de diye the."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 1000,
+      "status": "DISPUTED",
+      "disputedAmount": 400,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h2-fr-followup-payment",
+    "note": "French follow-up payment",
+    "customers": [
+      {
+        "name": "Aminata",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Ajoute 700 de crédit pour Aminata, farine 700."
+      },
+      {
+        "say": "Oui."
+      },
+      {
+        "say": "Elle a payé trois cents."
+      },
+      {
+        "say": "Oui."
+      }
+    ],
+    "expect": {
+      "customer": "Aminata",
+      "balance": 400,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h2-en-unknown-not-last",
+    "note": "An unknown named customer must not fall back to the last customer",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Put 300 on Amit's tab for tea."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Put 200 on Zoran's tab for bread."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "h2-en-two-customers-followup",
+    "note": "Follow-up goes to the most recent customer",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      },
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Put 400 on Amit's tab for tea."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Put 600 on Raju's tab for oil."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "He paid 100."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 500,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h2-de-credit-dispute",
+    "note": "German credit then dispute",
+    "customers": [
+      {
+        "name": "Hans",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Schreib 500 bei Hans an, Käse 500."
+      },
+      {
+        "say": "Ja."
+      },
+      {
+        "say": "Hans sagt, er hat schon 200 bezahlt."
+      },
+      {
+        "say": "Ja."
+      }
+    ],
+    "expect": {
+      "customer": "Hans",
+      "balance": 500,
+      "status": "DISPUTED",
+      "disputedAmount": 200,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h2-hi-devanagari-payment",
+    "note": "Hindi in Devanagari: credit then payment",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "राजू को चार सौ रुपये उधार लिखो, आटा चार सौ का।"
+      },
+      {
+        "say": "हाँ।"
+      },
+      {
+        "say": "राजू ने सौ रुपये दिए।"
+      },
+      {
+        "say": "हाँ।"
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h2-sw-credit-pay",
+    "note": "Swahili credit then payment",
+    "customers": [
+      {
+        "name": "Juma",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Andika deni ya Juma shilingi mia saba, unga mia saba."
+      },
+      {
+        "say": "Ndiyo."
+      },
+      {
+        "say": "Juma amelipa mia tatu."
+      },
+      {
+        "say": "Ndiyo."
+      }
+    ],
+    "expect": {
+      "customer": "Juma",
+      "balance": 400,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h2-es-reject-redo",
+    "note": "Reject then a corrected request",
+    "customers": [
+      {
+        "name": "Carlos",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Apunta 250 a Carlos, pan 250."
+      },
+      {
+        "say": "No."
+      },
+      {
+        "say": "Apunta 300 a Carlos, pan 300."
+      },
+      {
+        "say": "Sí."
+      }
+    ],
+    "expect": {
+      "customer": "Carlos",
+      "balance": 300,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "h2-en-overdue-dispute",
+    "note": "Overdue account, then a dispute",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju owes 650 for tea and sugar."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "clockDays": 20
+      },
+      {
+        "say": "Raju says he already gave 150."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 650,
+      "status": "DISPUTED",
+      "disputedAmount": 150,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h2-hl-offtopic-after-credit",
+    "note": "Unrelated speech after a credit writes nothing more",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 500 rupaye udhaar likh do, atta 500 ka."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Kal barish hogi."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 500,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN"
+      ]
+    }
+  },
+  {
+    "id": "h2-id-followup-correction",
+    "note": "Indonesian follow-up correction",
+    "customers": [
+      {
+        "name": "Budi",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Budi ambil 500: beras 300 dan gula 200."
+      },
+      {
+        "say": "Ya."
+      },
+      {
+        "say": "Koreksi, gula 150 bukan 200."
+      },
+      {
+        "say": "Ya."
+      }
+    ],
+    "expect": {
+      "customer": "Budi",
+      "balance": 450,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION"
+      ]
+    }
+  }
+]

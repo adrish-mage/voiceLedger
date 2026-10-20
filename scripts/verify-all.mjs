@@ -102,15 +102,19 @@ await check('.env is not tracked and results are ignored', () => {
 await check('No secrets in files that would be committed', () => {
   if (!inGit) return { skip: 'not a git repository' };
   const files = sh('git ls-files -co --exclude-standard').stdout.split('\n').filter(Boolean);
-  const patterns = [/ABSK[A-Za-z0-9+/=]{20,}/, /AKIA[0-9A-Z]{16}/, /AWS_BEARER_TOKEN_BEDROCK\s*=\s*[^\s#]{8,}/, /MCP_AUTH_TOKEN\s*=\s*[^\s#]{8,}/];
+  // Real key shapes are flagged anywhere. "NAME=value" lines are flagged only when the value is not an obvious placeholder.
+  const shapes = [/ABSK[A-Za-z0-9+/=]{20,}/, /AKIA[0-9A-Z]{16}/];
+  const assignment = /(?:AWS_BEARER_TOKEN_BEDROCK|MCP_AUTH_TOKEN)[ \t]*=[ \t]*['"]?([^\s#'"]{8,})/g;
+  const placeholder = /^(<|\$\{|\.\.\.)|your|change|replace|example|placeholder|xxx|todo|secret-here|random/i;
   const hits = [];
   for (const f of files) {
     if (/\.(png|jpg|jpeg|gif|ico|woff2?|ttf|zip|mp3|wav|m4a)$/i.test(f)) continue;
     let text;
     try { if (fs.statSync(f).size > 2_000_000) continue; text = fs.readFileSync(f, 'utf8'); } catch { continue; }
-    if (patterns.some((p) => p.test(text))) hits.push(f);
+    const realAssignment = [...text.matchAll(assignment)].some((m) => !placeholder.test(m[1]));
+    if (shapes.some((p) => p.test(text)) || realAssignment) hits.push(f);
   }
-  assert(!hits.length, 'possible secret in: ' + hits.join(', '));
+  assert(!hits.length, 'possible real secret in: ' + hits.join(', '));
   return `${files.length} files scanned`;
 });
 
@@ -125,7 +129,7 @@ await check('LICENSE, .env.example and README run instructions exist', () => {
 
 await check('Working tree is committed and eval cases are frozen', () => {
   if (!inGit) return { skip: 'not a git repository' };
-  const frozen = sh('git status --porcelain -- eval/cases.json eval/cases.holdout.json').stdout.trim();
+  const frozen = sh('git status --porcelain -- eval/cases.json eval/cases.holdout.json eval/cases.holdout2.json').stdout.trim();
   assert(!/^\s*M/m.test(frozen), 'eval case files have uncommitted edits');
   const dirty = sh('git status --porcelain').stdout.trim();
   if (dirty) return { warn: `${dirty.split('\n').length} uncommitted change(s)` };
@@ -155,7 +159,7 @@ await check('No eval phrase leaked into the interpreter prompt', () => {
   assert(!bad.length, 'specific eval phrases in prompt: ' + bad.join(', '));
 });
 
-for (const [label, file] of [['dev', 'eval/cases.json'], ['holdout', 'eval/cases.holdout.json']]) {
+for (const [label, file] of [['dev', 'eval/cases.json'], ['holdout v1', 'eval/cases.holdout.json'], ['holdout v2', 'eval/cases.holdout2.json']]) {
   await check(`Mock-interpreter eval keeps the ledger consistent (${label})`, () => {
     if (!fs.existsSync(file)) return { skip: `${file} missing` };
     const r = sh(`"${process.execPath}" eval/run.js`, { env: cleanEnv({ INTERPRETER: 'mock', CASES: file }) });

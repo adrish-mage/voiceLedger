@@ -5,7 +5,7 @@ import { SYSTEM_PROMPT } from '../src/ai/interpret.llm.js';
 
 const norm = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
 const prompt = norm(SYSTEM_PROMPT);
-const files = ['eval/cases.json', 'eval/cases.holdout.json'].filter((f) => fs.existsSync(f));
+const files = ['eval/cases.json', 'eval/cases.holdout.json', 'eval/cases.holdout2.json'].filter((f) => fs.existsSync(f));
 
 let leaks = 0;
 const phraseHits = new Map();
@@ -26,3 +26,4 @@ for (const f of files) {
 console.log(leaks ? `\n${leaks} full-sentence leak(s) found.` : '\nNo full eval sentence appears in the prompt.');
 console.log('\nTwo-word phrases shared with the prompt (review by eye; generic words are fine, specific eval phrases are not):');
 for (const [g, ids] of phraseHits) console.log(`  "${g}"  <- ${[...ids].join(', ')}`);
+process.exitCode = leaks ? 1 : 0;
