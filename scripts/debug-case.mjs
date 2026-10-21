@@ -27,9 +27,9 @@ for (const step of c.steps) {
   else if (step.clockDays) { nowMs = T0 + step.clockDays * 86_400_000; service.setDemoClock(new Date(nowMs).toISOString()); console.log(`--- clock +${step.clockDays}d`); }
   else {
     const r = await session.handle(step.say);
-    const { customerName, amount, items, correction, confidence, ambiguity } = last ?? {};
+    const { customerName, customerSpoken, amount, items, correction, confidence, ambiguity } = last ?? {};
     console.log(`\nSAY:    ${step.say}`);
-    console.log(`MODEL:  ${last?.intent} customer=${customerName} amount=${amount} items=${JSON.stringify(items)} correction=${JSON.stringify(correction)} conf=${confidence} amb=${ambiguity}`);
+    console.log(`MODEL:  ${last?.intent} customer=${customerName} spoken=${customerSpoken} amount=${amount} items=${JSON.stringify(items)} correction=${JSON.stringify(correction)} conf=${confidence} amb=${ambiguity}`);
     console.log(`REPLY:  ${r.reply}`);
   }
 }

@@ -5,7 +5,7 @@ import { SYSTEM_PROMPT } from '../src/ai/interpret.llm.js';
 
 const norm = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
 const prompt = norm(SYSTEM_PROMPT);
-const files = ['eval/cases.json', 'eval/cases.holdout.json', 'eval/cases.holdout2.json'].filter((f) => fs.existsSync(f));
+const files = ['eval/cases.json', 'eval/cases.holdout.json', 'eval/cases.holdout2.json', 'eval/cases.holdout3.json'].filter((f) => fs.existsSync(f));
 
 let leaks = 0;
 const phraseHits = new Map();

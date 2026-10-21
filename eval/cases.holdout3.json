@@ -1,0 +1,535 @@
+[
+  {
+    "id": "h3-en-insists",
+    "note": "Hearsay: customer insists he paid (English)",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju bought 900 of grain on credit."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Raju insists he cleared 300 already."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 900,
+      "status": "DISPUTED",
+      "disputedAmount": 300,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h3-en-told-me",
+    "note": "Hearsay: customer told the shopkeeper he paid",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Add 500 to Amit for notebooks."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Amit told me he gave 200 last week."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 500,
+      "status": "DISPUTED",
+      "disputedAmount": 200,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h3-en-fact-payment",
+    "note": "Payment stated as fact (English)",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Amit bought tea worth 450 on credit."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Amit handed me 450 in cash."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h3-es-hearsay",
+    "note": "Hearsay (Spanish)",
+    "customers": [
+      {
+        "name": "Carlos",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Carlos se llevó 1200 de mercadería."
+      },
+      {
+        "say": "Sí."
+      },
+      {
+        "say": "Carlos jura que ya entregó 500."
+      },
+      {
+        "say": "Sí."
+      }
+    ],
+    "expect": {
+      "customer": "Carlos",
+      "balance": 1200,
+      "status": "DISPUTED",
+      "disputedAmount": 500,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h3-es-fact-payment",
+    "note": "Payment stated as fact (Spanish)",
+    "customers": [
+      {
+        "name": "Carlos",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Anótale a Carlos 800, harina 800."
+      },
+      {
+        "say": "Sí."
+      },
+      {
+        "say": "Carlos me entregó 300 hoy."
+      },
+      {
+        "say": "Sí."
+      }
+    ],
+    "expect": {
+      "customer": "Carlos",
+      "balance": 500,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h3-pt-hearsay",
+    "note": "Hearsay (Portuguese)",
+    "customers": [
+      {
+        "name": "Joana",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Joana pegou 700 fiado, arroz 700."
+      },
+      {
+        "say": "Sim."
+      },
+      {
+        "say": "A Joana garante que já pagou 200."
+      },
+      {
+        "say": "Sim."
+      }
+    ],
+    "expect": {
+      "customer": "Joana",
+      "balance": 700,
+      "status": "DISPUTED",
+      "disputedAmount": 200,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h3-fr-hearsay",
+    "note": "Hearsay (French)",
+    "customers": [
+      {
+        "name": "Aminata",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Aminata doit 900, riz 900."
+      },
+      {
+        "say": "Oui."
+      },
+      {
+        "say": "Aminata prétend avoir déjà versé 400."
+      },
+      {
+        "say": "Oui."
+      }
+    ],
+    "expect": {
+      "customer": "Aminata",
+      "balance": 900,
+      "status": "DISPUTED",
+      "disputedAmount": 400,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h3-de-fact-payment",
+    "note": "Payment stated as fact (German)",
+    "customers": [
+      {
+        "name": "Hans",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Hans schuldet 600 für Brot."
+      },
+      {
+        "say": "Ja."
+      },
+      {
+        "say": "Hans hat mir heute 250 gegeben."
+      },
+      {
+        "say": "Ja."
+      }
+    ],
+    "expect": {
+      "customer": "Hans",
+      "balance": 350,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h3-id-hearsay",
+    "note": "Hearsay (Indonesian)",
+    "customers": [
+      {
+        "name": "Budi",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Budi hutang 1000 untuk gula."
+      },
+      {
+        "say": "Ya."
+      },
+      {
+        "say": "Budi katanya sudah menyerahkan 400."
+      },
+      {
+        "say": "Ya."
+      }
+    ],
+    "expect": {
+      "customer": "Budi",
+      "balance": 1000,
+      "status": "DISPUTED",
+      "disputedAmount": 400,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h3-sw-fact-payment",
+    "note": "Payment stated as fact (Swahili)",
+    "customers": [
+      {
+        "name": "Juma",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Juma anadaiwa 900 kwa mchele."
+      },
+      {
+        "say": "Ndiyo."
+      },
+      {
+        "say": "Juma amenipa 300."
+      },
+      {
+        "say": "Ndiyo."
+      }
+    ],
+    "expect": {
+      "customer": "Juma",
+      "balance": 600,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h3-hl-hearsay",
+    "note": "Hearsay (Hinglish)",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju ko 1200 ka saman udhaar do."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Raju ka kehna hai ki usne 500 pehle hi chuka diye."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 1200,
+      "status": "DISPUTED",
+      "disputedAmount": 500,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "DISPUTE_OPENED"
+      ]
+    }
+  },
+  {
+    "id": "h3-hl-fact-payment",
+    "note": "Payment stated as fact (Hinglish)",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Amit ne 700 ka udhaar liya."
+      },
+      {
+        "say": "Haan."
+      },
+      {
+        "say": "Amit ne abhi 200 rupaye chuka diye."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 500,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED"
+      ]
+    }
+  },
+  {
+    "id": "h3-en-followup-correction",
+    "note": "Follow-up correction (English)",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju took 600: milk 400 and bread 200."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Oops, the bread was 150, not 200."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 550,
+      "status": "OUTSTANDING",
+      "disputedAmount": 0,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "CORRECTION"
+      ]
+    }
+  },
+  {
+    "id": "h3-en-reject",
+    "note": "Reject writes nothing",
+    "customers": [
+      {
+        "name": "Amit",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Add 90 to Amit for pens."
+      },
+      {
+        "say": "No."
+      }
+    ],
+    "expect": {
+      "customer": "Amit",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "h3-hl-unknown-name",
+    "note": "Unknown name writes nothing",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Sohan ko 300 udhaar likh do."
+      },
+      {
+        "say": "Haan."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 0,
+      "status": "CLEAR",
+      "disputedAmount": 0,
+      "eventTypes": []
+    }
+  },
+  {
+    "id": "h3-en-pay-then-hearsay",
+    "note": "Payment as fact, then hearsay about an earlier payment",
+    "customers": [
+      {
+        "name": "Raju",
+        "defaultCreditTermDays": 14
+      }
+    ],
+    "steps": [
+      {
+        "say": "Raju took 500 on credit."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "He gave me 100."
+      },
+      {
+        "say": "Yes."
+      },
+      {
+        "say": "Raju maintains he gave 150 earlier."
+      },
+      {
+        "say": "Yes."
+      }
+    ],
+    "expect": {
+      "customer": "Raju",
+      "balance": 400,
+      "status": "DISPUTED",
+      "disputedAmount": 150,
+      "eventTypes": [
+        "CREDIT_GIVEN",
+        "PAYMENT_RECEIVED",
+        "DISPUTE_OPENED"
+      ]
+    }
+  }
+]

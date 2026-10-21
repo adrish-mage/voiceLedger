@@ -22,8 +22,8 @@ confidence: number 0..1
 ambiguity: short string describing anything unclear, else null
 
 Hard rules:
-- OPEN_DISPUTE only when the speaker relays that the customer SAYS or CLAIMS a payment was made (for example "X kehta hai usne de diya", "X afirma que ya abonó", "X alega que quitou", "X mengaku sudah membayar", "X anadai kuwa ameshalipa", "X claims he settled up"). amount is the amount the customer claims to have paid, if stated, otherwise null.
-- A plain statement that someone paid ("X paid 75", "X ne sattar diye", "X pagó cien", "X membayar lima puluh") is RECORD_PAYMENT with that amount.
+- Decide between OPEN_DISPUTE and RECORD_PAYMENT by WHO states the payment. If the sentence reports the customer's own words about having paid, using a speech verb whose subject is the customer (says, said, claims, alleges, asserts, reportedly; sagt, behauptet, dice, afirma, diz, alega, bilang, mengaku, anasema, kehta hai, bola, dit, affirme), it is OPEN_DISPUTE, even when the sentence also contains "already" and the payment is in the past tense. amount is the amount the customer claims to have paid, if stated, otherwise null.
+- If the speaker states the payment as their own fact ("X paid 75", "X ne 75 diye", "X pagó 75", "X hat 75 bezahlt", "X a payé 75"), it is RECORD_PAYMENT.
 - "X owes me N", "put N on X's tab", udhaar, fiado, utang, crédit, deni, "na conta" all mean RECORD_CREDIT, never a query.
 - Currency words and symbols are never needed. Ignore them.
 - In Swahili, "mia" means hundred, e.g. "mia nane" means 800.

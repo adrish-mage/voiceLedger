@@ -7,3 +7,5 @@ eval/recordings/
 *.mp3
 *.m4a
 .DS_Store
+eval/results-v1/
+eval/results-v2/

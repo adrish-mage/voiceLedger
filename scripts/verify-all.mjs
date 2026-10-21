@@ -129,7 +129,7 @@ await check('LICENSE, .env.example and README run instructions exist', () => {
 
 await check('Working tree is committed and eval cases are frozen', () => {
   if (!inGit) return { skip: 'not a git repository' };
-  const frozen = sh('git status --porcelain -- eval/cases.json eval/cases.holdout.json eval/cases.holdout2.json').stdout.trim();
+  const frozen = sh('git status --porcelain -- eval/cases.json eval/cases.holdout.json eval/cases.holdout2.json eval/cases.holdout3.json').stdout.trim();
   assert(!/^\s*M/m.test(frozen), 'eval case files have uncommitted edits');
   const dirty = sh('git status --porcelain').stdout.trim();
   if (dirty) return { warn: `${dirty.split('\n').length} uncommitted change(s)` };
@@ -162,7 +162,7 @@ await check('No eval phrase leaked into the interpreter prompt', () => {
   if (shared.length) return { warn: 'review these phrases shared with eval sentences: ' + shared.join(', ') };
 });
 
-for (const [label, file] of [['dev', 'eval/cases.json'], ['holdout v1', 'eval/cases.holdout.json'], ['holdout v2', 'eval/cases.holdout2.json']]) {
+for (const [label, file] of [['dev', 'eval/cases.json'], ['holdout v1', 'eval/cases.holdout.json'], ['holdout v2', 'eval/cases.holdout2.json'], ['holdout v3', 'eval/cases.holdout3.json']]) {
   await check(`Mock-interpreter eval keeps the ledger consistent (${label})`, () => {
     if (!fs.existsSync(file)) return { skip: `${file} missing` };
     const r = sh(`"${process.execPath}" eval/run.js`, { env: cleanEnv({ INTERPRETER: 'mock', CASES: file }) });
