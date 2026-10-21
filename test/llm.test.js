@@ -1,11 +1,26 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { callModel } from '../src/ai/interpret.llm.js';
+import { callModel, deriveCustomerSpoken } from '../src/ai/interpret.llm.js';
 
 const messages = [
   { role: 'system', content: 'system instruction' },
   { role: 'user', content: 'hello' },
 ];
+
+test('deriveCustomerSpoken trusts copied names and rejects pronouns', () => {
+  const cases = [
+    [{ customerName: 'Raju' }, true],
+    [{ customerName: null, customerMention: 'Mohan' }, true],
+    [{ customerName: null, customerMention: 'Usne' }, false],
+    [{ customerName: null, customerMention: null }, false],
+    [{ customerName: null, customerMention: 'उसने' }, false],
+    [{ customerName: null, customerMention: 'Zoran' }, true],
+  ];
+
+  for (const [parsed, expected] of cases) {
+    assert.equal(deriveCustomerSpoken(parsed), expected, JSON.stringify(parsed));
+  }
+});
 
 test('callModel retries a throttled Bedrock request once after the delay', async () => {
   let calls = 0;

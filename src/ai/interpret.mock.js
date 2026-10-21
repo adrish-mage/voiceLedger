@@ -8,7 +8,10 @@ const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1).toLowerCase() : null);
 
 export async function interpretMock(transcript /* , context */) {
   const t = transcript.trim();
-  const base = (over, lang = 'hi') => emptyIntent({ confidence: 0.9, lang, ...over });
+  const base = (over, lang = 'hi') => {
+    const customerMention = typeof over.customerName === 'string' ? over.customerName : null;
+    return emptyIntent({ confidence: 0.9, lang, customerMention, customerSpoken: Boolean(customerMention), ...over });
+  };
 
   if (/^(haan|han|ha|yes|ok|okay|theek hai|kar do)[.! ]*$/i.test(t)) return base({ intent: 'CONFIRM' }, null);
   if (/^(nahi|nahin|no|cancel|rehne do)[.! ]*$/i.test(t)) return base({ intent: 'REJECT' }, null);
@@ -42,5 +45,5 @@ export async function interpretMock(transcript /* , context */) {
   if (m) return base({ intent: 'QUERY_BALANCE', customerName: cap(m[1]), customerSpoken: true });
 
   if (/overdue/i.test(t)) return base({ intent: 'QUERY_OVERDUE' }, 'en');
-  return emptyIntent({ intent: 'UNKNOWN', ambiguity: 'mock interpreter did not match' });
+  return base({ intent: 'UNKNOWN', ambiguity: 'mock interpreter did not match' });
 }

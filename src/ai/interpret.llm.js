@@ -12,7 +12,7 @@ Return ONLY one JSON object. No markdown, no code fences, no explanation.
 Fields:
 intent: RECORD_CREDIT | RECORD_PAYMENT | CORRECT_ITEM | OPEN_DISPUTE | QUERY_BALANCE | QUERY_OVERDUE | CONFIRM | REJECT | UNKNOWN
 customerName: string or null (must be exactly one of the known customers, else null)
-customerSpoken: true if the sentence contains a customer's name (even one not in the known list); false if the customer is only implied (he, she, usne, él, ela, dia, yeye, elle) or not mentioned.
+customerMention: copy the exact words that name the customer, as written in the sentence (including a name not in the known customers list). null if no name appears. Pronouns are not names.
 amount: integer rupees or null
 items: [{name, quantity, totalAmount}] or null
 correction: {itemName, newTotalAmount, claimedOldTotal} or null
@@ -30,7 +30,7 @@ Hard rules:
 - "nahi, X nahi, Y tha" is CORRECT_ITEM with claimedOldTotal=X and newTotalAmount=Y.
 - Bare "haan"/"yes" is CONFIRM, bare "nahi"/"no" is REJECT.
 - For CONFIRM and REJECT, every other field must be null.
-- If customerSpoken is false, customerName must be null; the app supplies the person under discussion.
+- If customerMention is null, customerName must be null.
 - Never fill customerName, amounts or item names from earlier turns.
 - customerName must match a known customer. If the spoken name is only a partial match or could match more than one known customer, set customerName to null and explain in ambiguity.
 - If a name, amount or item is unclear, set it to null and explain in ambiguity. Never guess.
@@ -48,7 +48,7 @@ Items rules:
 Confidence rules:
 - Use 0.9 or above only when intent, customer and amount are all clear.
 - Use 0.5 or below when anything is null or ambiguous.
-- A null customerName with customerSpoken false never lowers confidence.
+- A null customerName with a null customerMention never lowers confidence.
 
 Examples:
 - "Anota 230 en la cuenta de Pedro, pan 230" -> RECORD_CREDIT, Pedro, 230, items [{name: "pan", totalAmount: 230}]
@@ -114,6 +114,23 @@ export async function callModel(messages, modelClient = client) {
 
 export const detectLanguage = (t) => (/[\u0900-\u097F]/.test(t) ? 'hindi' : 'hinglish');
 
+const PRONOUNS = new Set([
+    'he', 'she', 'they', 'him', 'her', 'them', 'usne', 'unhone', 'usko', 'unko',
+    'woh', 'wo', 'vo', 'vah', 'er', 'sie', 'ihn', 'ihr', 'él', 'el', 'ella',
+    'ellos', 'ellas', 'ela', 'ele', 'eles', 'dia', 'ia', 'mereka', 'yeye', 'wao',
+    'yule', 'il', 'elle', 'ils', 'elles', 'lui', 'eux', 'उसने', 'उन्होंने',
+    'उसको', 'उनको', 'वह', 'वो',
+]);
+
+export function deriveCustomerSpoken(parsed) {
+    if (typeof parsed?.customerName === 'string' && parsed.customerName.trim()) return true;
+    const mention = typeof parsed?.customerMention === 'string'
+        ? parsed.customerMention.normalize('NFC').trim().toLowerCase().replace(/\p{P}/gu, '').trim()
+        : '';
+    if (!mention) return false;
+    return !mention.split(/\s+/u).every((word) => PRONOUNS.has(word));
+}
+
 export async function interpretLLM(transcript, context) {
     const messages = buildMessages(transcript, context);
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -121,12 +138,13 @@ export async function interpretLLM(transcript, context) {
             const raw = await callModel(messages);
             const parsed = JSON.parse(raw.trim().replace(/^```json\s*|```$/g, '').trim());
             const json = { ...parsed, language: detectLanguage(transcript) };
-            const customerSpokenWasFalse = json.customerSpoken === false;
-            if (typeof json.customerName === 'string' && json.customerName.trim()) json.customerSpoken = true;
-            if (customerSpokenWasFalse) json.customerName = null;
+            json.customerSpoken = deriveCustomerSpoken(json);
+            if (!json.customerSpoken) json.customerName = null;
             // CONFIRM/REJECT carry no payload; never trust fields the model adds.
             if (json.intent === 'CONFIRM' || json.intent === 'REJECT') {
                 json.customerName = null;
+                json.customerMention = null;
+                json.customerSpoken = false;
                 json.amount = null;
                 json.items = null;
                 json.correction = null;
