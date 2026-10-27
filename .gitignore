@@ -1,5 +1,7 @@
 node_modules/
 .env
+/LEARN.md
+/FRICTION_LOG.md
 eval/results/
 data/*.jsonl
 eval/recordings/
